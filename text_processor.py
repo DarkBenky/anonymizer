@@ -4,6 +4,7 @@ import PIL.Image
 import pytesseract
 import io 
 import pdf2image
+import easyocr
 
 file = st.file_uploader("Upload a file")
 def text_processor(file):
@@ -24,8 +25,30 @@ def text_processor(file):
 			for page in images:
 				st.image(page, use_column_width=True)
 			return images
+		if file.name.endswith(".jpg"):
+			image = PIL.Image.open(io.BytesIO(file_data))
+			return image
+		if file.name.endswith(".png"):
+			image = PIL.Image.open(io.BytesIO(file_data))
+			return image
+		if file.name.endswith(".jpeg"):
+			image = PIL.Image.open(io.BytesIO(file_data))
+			return image
+		if file.name.endswith(".jpg"):
+			image = PIL.Image.open(io.BytesIO(file_data))
+			return image
 
-st.write(text_processor(file))
+def ocr_img(img):
+	ocr = easyocr.Reader(['sk'])
+	result = ocr.readtext(img)
+	return result
+	
+
+
+res = text_processor(file)
+if res is not None:
+	text = ocr_img(res)
+	st.write(text)
 
 
 	

@@ -6,6 +6,10 @@ import io
 import pdf2image
 import easyocr
 
+def scannedPdfConverter(file_path, save_path):
+    ocrmypdf.ocr(file_path, save_path, skip_text=True)
+    print('File converted successfully!')
+
 file = st.file_uploader("Upload a file")
 def text_processor(file):
 	if file is not None:
@@ -22,8 +26,12 @@ def text_processor(file):
 				return text
 		if file.name.endswith(".pdf"):
 			images = pdf2image.convert_from_bytes(file_data,dpi=300)
+			reader = easyocr.Reader(['en','sk'],gpu=True)
 			for page in images:
+				text = reader.readtext(np.array(page))
 				st.image(page, use_column_width=True)
+				st.write(text)
+			images = scannedPdfConverter(file.read(), "converted.pdf")
 			return images
 		if file.name.endswith(".jpg"):
 			image = PIL.Image.open(io.BytesIO(file_data))
@@ -38,17 +46,10 @@ def text_processor(file):
 			image = PIL.Image.open(io.BytesIO(file_data))
 			return image
 
-def ocr_img(img):
-	ocr = easyocr.Reader(['sk'])
-	result = ocr.readtext(img)
-	return result
+st.write(text_processor(file))
+
 	
 
-
-res = text_processor(file)
-if res is not None:
-	text = ocr_img(res)
-	st.write(text)
 
 
 	

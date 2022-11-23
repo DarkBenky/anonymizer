@@ -1,14 +1,11 @@
 import streamlit as st
-import fitz
+import PyPDF2
 import PIL.Image
-import pytesseract
+import numpy as np
 import io 
 import pdf2image
 import easyocr
 
-def scannedPdfConverter(file_path, save_path):
-    ocrmypdf.ocr(file_path, save_path, skip_text=True)
-    print('File converted successfully!')
 
 file = st.file_uploader("Upload a file")
 def text_processor(file):
@@ -18,20 +15,20 @@ def text_processor(file):
 			text = file.read().decode("utf-8")
 			return text
 		if file.name.endswith(".pdf"):
-			doc = fitz.open(stream=file_data, filetype="pdf")
+			pdf = PyPDF2.PdfFileReader(io.BytesIO(file_data))
+			pages = pdf.getNumPages()
 			text = ""
-			for page in doc:
-				text += page.get_text()
+			for page in range(pages):
+				text += pdf.getPage(page).extractText()
 			if text != "":
 				return text
 		if file.name.endswith(".pdf"):
 			images = pdf2image.convert_from_bytes(file_data,dpi=300)
 			reader = easyocr.Reader(['en','sk'],gpu=True)
 			for page in images:
-				text = reader.readtext(np.array(page))
+				text = reader.readtext(np.array(page),detail=0)
 				st.image(page, use_column_width=True)
 				st.write(text)
-			images = scannedPdfConverter(file.read(), "converted.pdf")
 			return images
 		if file.name.endswith(".jpg"):
 			image = PIL.Image.open(io.BytesIO(file_data))
